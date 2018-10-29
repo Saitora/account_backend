@@ -2,6 +2,7 @@ package ru.sberbank.model;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Objects;
 
 @Entity
@@ -10,6 +11,7 @@ public class AccountsEntity {
     private int id;
     private String accountNumber;
     private BigDecimal cash = new BigDecimal(0);
+    private Timestamp created;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,7 +25,7 @@ public class AccountsEntity {
     }
 
     @Basic
-    @Column(name = "account_number", updatable = false, nullable = false, insertable = false)
+    @Column(name = "account_number", updatable = false, nullable = false)
     public String getAccountNumber() {
         return accountNumber;
     }
@@ -55,5 +57,15 @@ public class AccountsEntity {
     @Override
     public int hashCode() {
         return Objects.hash(id, accountNumber, cash);
+    }
+
+    @Basic
+    @Column(name = "created", updatable = false, nullable = false, insertable = false)
+    public Timestamp getCreated() {
+        return created;
+    }
+
+    public void setCreated(Timestamp created) {
+        this.created = created;
     }
 }

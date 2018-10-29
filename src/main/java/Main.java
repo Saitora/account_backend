@@ -6,7 +6,7 @@ public class Main {
     public static void main(final String[] args) throws Exception {
         HibernateUtil.buildSessionFactory();
         AccountsManager manager = new AccountsManager(HibernateUtil.getSessionFactory());
-        System.out.println(manager.countAccounts());
+        System.out.println(manager.countAccounts(null));
         System.out.println(manager.getAllAccounts());
         HibernateUtil.closeSessionFactory();
     }

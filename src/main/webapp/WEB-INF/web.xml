@@ -11,21 +11,21 @@
     </listener>
 
     <servlet>
-        <servlet-name>hello</servlet-name>
-        <servlet-class>ru.sberbank.ServletTest</servlet-class>
-    </servlet>
-    <servlet>
         <servlet-name>account</servlet-name>
         <servlet-class>ru.sberbank.ServletAccount</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>operation</servlet-name>
+        <servlet-class>ru.sberbank.ServletOperation</servlet-class>
+    </servlet>
 
-    <servlet-mapping>
-        <servlet-name>hello</servlet-name>
-        <url-pattern>/hello_1</url-pattern>
-    </servlet-mapping>
     <servlet-mapping>
         <servlet-name>account</servlet-name>
         <url-pattern>/account</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>operation</servlet-name>
+        <url-pattern>/operation</url-pattern>
     </servlet-mapping>
 
 </web-app>

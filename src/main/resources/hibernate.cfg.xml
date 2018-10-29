@@ -7,12 +7,13 @@
         <property name="connection.url">jdbc:postgresql://localhost:6666/accounting</property>
         <property name="connection.driver_class">org.postgresql.Driver</property>
         <property name="dialect">org.hibernate.dialect.PostgreSQL9Dialect</property>
-        <property name="connection.username">postgres</property>
-        <property name="connection.password"/>
         <property name="show_sql">true</property>
         <property name="hibernate.connection.isolation">2</property>
+        <property name="connection.username">postgres</property>
+        <property name="connection.password"/>
         <mapping class="ru.sberbank.model.AccountsEntity"/>
         <mapping class="ru.sberbank.model.ListOfValuesEntity"/>
+        <mapping class="ru.sberbank.model.OperationsEntity"/>
 
         <!-- DB schema will be updated if needed -->
         <!-- <property name="hbm2ddl.auto">update</property> -->

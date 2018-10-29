@@ -1,5 +1,6 @@
 package ru.sberbank;
 
+import org.hibernate.HibernateException;
 import org.json.JSONObject;
 import ru.sberbank.model.AccountsEntity;
 import ru.sberbank.model.AccountsManager;
@@ -41,6 +42,7 @@ public class ServletAccount extends HttpServlet {
     private static final String METHOD_ADD_CASH = "add";
     private static final String METHOD_GET_CASH = "get";
     private static final String METHOD_TRANSFER_CASH = "transfer";
+    private static final String METHOD_DELETE = "delete";
 
     //Get
     private static final String METHOD_GET_ALL_ACCOUNTS = "get_all_accounts";
@@ -52,6 +54,7 @@ public class ServletAccount extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setContentType("application/json");
+        resp.setHeader("Access-Control-Allow-Origin", "*");
         String method = req.getParameter("method");
         JSONObject response = null;
         try {
@@ -83,6 +86,7 @@ public class ServletAccount extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setContentType("application/json");
+        resp.setHeader("Access-Control-Allow-Origin", "*");
         String method = req.getParameter("method");
         JSONObject response = null;
         try {
@@ -91,7 +95,7 @@ public class ServletAccount extends HttpServlet {
             } else {
                 switch (method) {
                     case METHOD_CREATE:
-                        response = processCreateMethod();
+                        response = processCreateMethod(req);
                         break;
                     case METHOD_ADD_CASH:
                         response = processAddCashMethod(req);
@@ -101,6 +105,9 @@ public class ServletAccount extends HttpServlet {
                         break;
                     case METHOD_TRANSFER_CASH:
                         response = processTransferCashMethod(req);
+                        break;
+                    case METHOD_DELETE:
+                        response = processDeleteMethod(req);
                         break;
                     default:
                         response = processWrongMethod(method);
@@ -114,10 +121,10 @@ public class ServletAccount extends HttpServlet {
         out.print(response);
     }
 
-    private JSONObject processCreateMethod() {
+    private JSONObject processCreateMethod(HttpServletRequest req) {
         JSONObject json = new JSONObject();
         try {
-            AccountsEntity account = accManager.createAccount();
+            AccountsEntity account = accManager.createAccount(req.getParameter("account_num"));
             json.put("account_number", account.getAccountNumber());
             addStatusMessage(json,
                     ERROR_STATUS.OK.getValue(),
@@ -212,9 +219,9 @@ public class ServletAccount extends HttpServlet {
     private JSONObject processGetAllAccounts(HttpServletRequest req) {
         JSONObject json = new JSONObject();
         List list = accManager.getAllAccounts();
-        long count = accManager.countAccounts();
+        long count = accManager.countAccounts(null);
         json.put("amount", count);
-        json.put("accounts", list);
+        json.put("items", list);
         addStatusMessage(json,
                 ERROR_STATUS.OK.getValue(),
                 ERROR_STATUS.OK.getDescription()
@@ -224,7 +231,7 @@ public class ServletAccount extends HttpServlet {
 
     private JSONObject processGetAccountsAmount() {
         JSONObject json = new JSONObject();
-        long count = accManager.countAccounts();
+        long count = accManager.countAccounts(null);
         json.put("amount", count);
         addStatusMessage(json,
                 ERROR_STATUS.OK.getValue(),
@@ -238,11 +245,15 @@ public class ServletAccount extends HttpServlet {
         try {
             int pageSize = Integer.valueOf(req.getParameter("page_size"));
             int pageNum = Integer.valueOf(req.getParameter("page_num"));
-            List list = accManager.getAccountPage(pageSize, pageNum);
+            String accountNumFilter = req.getParameter("account_num_filter");
+            System.out.println(accountNumFilter);
+            List list = accManager.getAccountPage(pageSize, pageNum, accountNumFilter);
+            long count = accManager.countAccounts(accountNumFilter);
             json.put("page_size", pageSize);
             json.put("page_num", pageNum);
-            json.put("amount", list.size());
-            json.put("accounts", list);
+            json.put("amount_on_page", list.size());
+            json.put("amount", count);
+            json.put("items", list);
             addStatusMessage(json,
                     ERROR_STATUS.OK.getValue(),
                     ERROR_STATUS.OK.getDescription()
@@ -252,6 +263,31 @@ public class ServletAccount extends HttpServlet {
                     json,
                     ERROR_STATUS.ERROR.getValue(),
                     e.getMessage()
+            );
+        }
+        return json;
+    }
+
+    private JSONObject processDeleteMethod(HttpServletRequest req) {
+        JSONObject json = new JSONObject();
+        try {
+            String accountNum = req.getParameter("account_num");
+            accManager.deleteAccount(accountNum);
+            addStatusMessage(json,
+                    ERROR_STATUS.OK.getValue(),
+                    ERROR_STATUS.OK.getDescription()
+            );
+        } catch (HibernateException e) {
+            addStatusMessage(
+                    json,
+                    ERROR_STATUS.ERROR.getValue(),
+                    e.getMessage()
+            );
+        } catch (Exception e) {
+            addStatusMessage(
+                    json,
+                    ERROR_STATUS.ERROR.getValue(),
+                    Arrays.toString(e.getStackTrace())
             );
         }
         return json;

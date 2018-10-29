@@ -4,6 +4,7 @@ import ru.sberbank.model.helpers.HibernateUtil;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import java.util.TimeZone;
 
 public class AccountingServletContextListener implements ServletContextListener {
 
@@ -16,6 +17,7 @@ public class AccountingServletContextListener implements ServletContextListener 
     @Override
     public void contextInitialized(ServletContextEvent arg0) {
         HibernateUtil.buildSessionFactory();
+        TimeZone.setDefault(TimeZone.getTimeZone("GMT+6"));
     }
 
 }

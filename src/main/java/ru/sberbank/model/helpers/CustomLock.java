@@ -1,11 +1,14 @@
 package ru.sberbank.model.helpers;
 
-public class CustomLock {
+import java.util.concurrent.locks.ReentrantLock;
+
+public class CustomLock extends ReentrantLock {
 
     private int counter = 0;
     private String key = null;
 
     public CustomLock(String key) {
+        super();
         this.key = key;
     }
 

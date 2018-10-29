@@ -12,7 +12,8 @@ public class ListOfValuesEntity {
     private String displayValue;
 
     @Id
-    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", updatable = false, nullable = false, insertable = false)
     public int getId() {
         return id;
     }
