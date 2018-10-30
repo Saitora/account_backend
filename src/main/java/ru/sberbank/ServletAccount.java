@@ -2,6 +2,8 @@ package ru.sberbank;
 
 import org.hibernate.HibernateException;
 import org.json.JSONObject;
+import ru.sberbank.json.EntitiesJSONResponse;
+import ru.sberbank.json.JSONResponse;
 import ru.sberbank.model.AccountsEntity;
 import ru.sberbank.model.AccountsManager;
 import ru.sberbank.model.exceptions.AccountingException;
@@ -21,7 +23,7 @@ public class ServletAccount extends HttpServlet {
 
     enum ERROR_STATUS {
         OK(0, ""),
-        WRONG_METHOD(1, "wrong method"),
+        WRONG_METHOD(1, "method not supported"),
         WRONG_PARAMETERS(2, "wrong parameters"),
         ERROR(3, "server error");
 
@@ -122,180 +124,132 @@ public class ServletAccount extends HttpServlet {
     }
 
     private JSONObject processCreateMethod(HttpServletRequest req) {
-        JSONObject json = new JSONObject();
+        JSONResponse json = new JSONResponse();
         try {
             AccountsEntity account = accManager.createAccount(req.getParameter("account_num"));
-            json.put("account_number", account.getAccountNumber());
-            addStatusMessage(json,
-                    ERROR_STATUS.OK.getValue(),
-                    ERROR_STATUS.OK.getDescription()
-            );
+            json.setErrorCode(ERROR_STATUS.OK.getValue())
+                    .setErrorMessage(ERROR_STATUS.OK.getDescription())
+                    .put("account_number", account.getAccountNumber());
         } catch (Exception e) {
-            addStatusMessage(
-                    json,
-                    ERROR_STATUS.ERROR.getValue(),
-                    Arrays.toString(e.getStackTrace())
-            );
+            json.setErrorCode(ERROR_STATUS.ERROR.getValue())
+                    .setErrorMessage(Arrays.toString(e.getStackTrace()));
         }
         return json;
     }
 
     private JSONObject processAddCashMethod(HttpServletRequest req) {
-        JSONObject json = new JSONObject();
+        JSONResponse json = new JSONResponse();
         try {
             String accountNum = req.getParameter("account_num");
             BigDecimal cash = new BigDecimal(req.getParameter("cash"));
             accManager.addCash(accountNum, cash);
-            addStatusMessage(json,
-                    ERROR_STATUS.OK.getValue(),
-                    ERROR_STATUS.OK.getDescription()
-            );
+            json.setErrorCode(ERROR_STATUS.OK.getValue())
+                    .setErrorMessage(ERROR_STATUS.OK.getDescription());
         } catch (Exception e) {
-            addStatusMessage(
-                    json,
-                    ERROR_STATUS.ERROR.getValue(),
-                    Arrays.toString(e.getStackTrace())
-            );
+            json.setErrorCode(ERROR_STATUS.ERROR.getValue())
+                    .setErrorMessage(Arrays.toString(e.getStackTrace()));
         }
         return json;
     }
 
     private JSONObject processGetCashMethod(HttpServletRequest req) {
-        JSONObject json = new JSONObject();
+        JSONResponse json = new JSONResponse();
         try {
             String accountNum = req.getParameter("account_num");
             BigDecimal cash = new BigDecimal(req.getParameter("cash"));
             accManager.getCash(accountNum, cash);
-            addStatusMessage(json,
-                    ERROR_STATUS.OK.getValue(),
-                    ERROR_STATUS.OK.getDescription()
-            );
+            json.setErrorCode(ERROR_STATUS.OK.getValue())
+                    .setErrorMessage(ERROR_STATUS.OK.getDescription());
         } catch (AccountingException e) {
-            addStatusMessage(
-                    json,
-                    ERROR_STATUS.ERROR.getValue(),
-                    e.getMessage()
-            );
+            json.setErrorCode(ERROR_STATUS.ERROR.getValue())
+                    .setErrorMessage(e.getMessage());
         } catch (Exception e) {
-            addStatusMessage(
-                    json,
-                    ERROR_STATUS.ERROR.getValue(),
-                    Arrays.toString(e.getStackTrace())
-            );
+            json.setErrorCode(ERROR_STATUS.ERROR.getValue())
+                    .setErrorMessage(Arrays.toString(e.getStackTrace()));
         }
         return json;
     }
 
     private JSONObject processTransferCashMethod(HttpServletRequest req) {
-        JSONObject json = new JSONObject();
+        JSONResponse json = new JSONResponse();
         try {
             String fromAccountNum = req.getParameter("from_account_num");
             String toAccountNum = req.getParameter("to_account_num");
             BigDecimal cash = new BigDecimal(req.getParameter("cash"));
             accManager.transferCash(fromAccountNum, toAccountNum, cash);
-            addStatusMessage(json,
-                    ERROR_STATUS.OK.getValue(),
-                    ERROR_STATUS.OK.getDescription()
-            );
+            json.setErrorCode(ERROR_STATUS.OK.getValue())
+                    .setErrorMessage(ERROR_STATUS.OK.getDescription());
         } catch (Exception e) {
-            addStatusMessage(
-                    json,
-                    ERROR_STATUS.ERROR.getValue(),
-                    e.getMessage()
-            );
+            json.setErrorCode(ERROR_STATUS.ERROR.getValue())
+                    .setErrorMessage(e.getMessage());
         }
         return json;
     }
 
     private JSONObject processWrongMethod(String method) {
-        JSONObject json = new JSONObject();
-        addStatusMessage(json,
-                ERROR_STATUS.WRONG_METHOD.getValue(),
-                ERROR_STATUS.WRONG_METHOD.getDescription()
-        );
+        JSONResponse json = new JSONResponse();
+        json.setErrorCode(ERROR_STATUS.WRONG_METHOD.getValue())
+                .setErrorMessage(ERROR_STATUS.WRONG_METHOD.getDescription());
         return json;
     }
 
     private JSONObject processGetAllAccounts(HttpServletRequest req) {
-        JSONObject json = new JSONObject();
+        EntitiesJSONResponse json = new EntitiesJSONResponse();
         List list = accManager.getAllAccounts();
         long count = accManager.countAccounts(null);
-        json.put("amount", count);
-        json.put("items", list);
-        addStatusMessage(json,
-                ERROR_STATUS.OK.getValue(),
-                ERROR_STATUS.OK.getDescription()
-        );
+        json.setAmount(count)
+                .setEntitiesList(list)
+                .setErrorCode(ERROR_STATUS.OK.getValue())
+                .setErrorMessage(ERROR_STATUS.OK.getDescription());
         return json;
     }
 
     private JSONObject processGetAccountsAmount() {
-        JSONObject json = new JSONObject();
+        EntitiesJSONResponse json = new EntitiesJSONResponse();
         long count = accManager.countAccounts(null);
-        json.put("amount", count);
-        addStatusMessage(json,
-                ERROR_STATUS.OK.getValue(),
-                ERROR_STATUS.OK.getDescription()
-        );
+        json.setAmount(count)
+                .setErrorCode(ERROR_STATUS.OK.getValue())
+                .setErrorMessage(ERROR_STATUS.OK.getDescription());
         return json;
     }
 
     private JSONObject processGetAccountsPage(HttpServletRequest req) {
-        JSONObject json = new JSONObject();
+        EntitiesJSONResponse json = new EntitiesJSONResponse();
         try {
             int pageSize = Integer.valueOf(req.getParameter("page_size"));
             int pageNum = Integer.valueOf(req.getParameter("page_num"));
             String accountNumFilter = req.getParameter("account_num_filter");
-            System.out.println(accountNumFilter);
             List list = accManager.getAccountPage(pageSize, pageNum, accountNumFilter);
             long count = accManager.countAccounts(accountNumFilter);
-            json.put("page_size", pageSize);
-            json.put("page_num", pageNum);
-            json.put("amount_on_page", list.size());
-            json.put("amount", count);
-            json.put("items", list);
-            addStatusMessage(json,
-                    ERROR_STATUS.OK.getValue(),
-                    ERROR_STATUS.OK.getDescription()
-            );
+            json.setPageSize(pageSize)
+                    .setPageNum(pageNum)
+                    .setAmountOnPage(list.size())
+                    .setAmount(count)
+                    .setEntitiesList(list)
+                    .setErrorCode(ERROR_STATUS.OK.getValue())
+                    .setErrorMessage(ERROR_STATUS.OK.getDescription());
         } catch (Exception e) {
-            addStatusMessage(
-                    json,
-                    ERROR_STATUS.ERROR.getValue(),
-                    e.getMessage()
-            );
+            json.setErrorCode(ERROR_STATUS.ERROR.getValue())
+                    .setErrorMessage(e.getMessage());
         }
         return json;
     }
 
     private JSONObject processDeleteMethod(HttpServletRequest req) {
-        JSONObject json = new JSONObject();
+        JSONResponse json = new JSONResponse();
         try {
             String accountNum = req.getParameter("account_num");
             accManager.deleteAccount(accountNum);
-            addStatusMessage(json,
-                    ERROR_STATUS.OK.getValue(),
-                    ERROR_STATUS.OK.getDescription()
-            );
+            json.setErrorCode(ERROR_STATUS.OK.getValue())
+                    .setErrorMessage(ERROR_STATUS.OK.getDescription());
         } catch (HibernateException e) {
-            addStatusMessage(
-                    json,
-                    ERROR_STATUS.ERROR.getValue(),
-                    e.getMessage()
-            );
+            json.setErrorCode(ERROR_STATUS.ERROR.getValue())
+                    .setErrorMessage(e.getMessage());
         } catch (Exception e) {
-            addStatusMessage(
-                    json,
-                    ERROR_STATUS.ERROR.getValue(),
-                    Arrays.toString(e.getStackTrace())
-            );
+            json.setErrorCode(ERROR_STATUS.ERROR.getValue())
+                    .setErrorMessage(Arrays.toString(e.getStackTrace()));
         }
         return json;
-    }
-
-    private void addStatusMessage(JSONObject json, int code, String message ) {
-        json.put("status", code);
-        json.put("error_message", message);
     }
 
 }

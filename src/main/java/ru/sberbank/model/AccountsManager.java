@@ -45,7 +45,7 @@ public class AccountsManager {
         CustomLock lock = getAccountLock(accountNumber);
         try {
             lock.lock();
-            AccountsEntity account = new AccountsEntity();
+            AccountsEntity account;
             Query q = s.createQuery("SELECT A FROM AccountsEntity A WHERE A.accountNumber = :accnum");
             account = (AccountsEntity) q.setParameter("accnum", accountNumber).getSingleResult();
             s.remove(account);
@@ -74,8 +74,8 @@ public class AccountsManager {
         if (accountNumFilter == null) {
             q = s.createQuery("SELECT A FROM AccountsEntity A ORDER BY A.created DESC");
         } else {
-            q = s.createQuery("SELECT A FROM AccountsEntity A WHERE A.accountNumber like :account_num ORDER BY A.created DESC");
-            q.setParameter("account_num", "%" + accountNumFilter + '%');
+            q = s.createQuery("SELECT A FROM AccountsEntity A WHERE A.accountNumber = :account_num ORDER BY A.created DESC");
+            q.setParameter("account_num", accountNumFilter);
         }
         q.setFirstResult(pageSize * pageNum);
         q.setMaxResults(pageSize);

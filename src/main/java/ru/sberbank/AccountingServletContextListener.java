@@ -17,7 +17,7 @@ public class AccountingServletContextListener implements ServletContextListener 
     @Override
     public void contextInitialized(ServletContextEvent arg0) {
         HibernateUtil.buildSessionFactory();
-        TimeZone.setDefault(TimeZone.getTimeZone("GMT+6"));
+        //TimeZone.setDefault(TimeZone.getTimeZone("GMT+6"));
     }
 
 }
